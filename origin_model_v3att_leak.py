@@ -19,6 +19,9 @@ import os
 from inputHandler import create_train_dev_set
 
 
+def custom_loss(y_truth, sim):
+    return tf.where(y_truth == 1, 1 - sim, tf.clip_by_value(sim, 0, 1))
+
 
 class SiameseBiLSTM:
     def __init__(self, embedding_dim, max_sequence_length, number_lstm, number_dense, rate_drop_lstm, 
@@ -125,7 +128,7 @@ class SiameseBiLSTM:
         print(cos_sim.shape)
 
         model = Model(inputs=[sequence_1_input, sequence_2_input, leaks_input], outputs=cos_sim)
-        model.compile(loss='binary_crossentropy', optimizer='nadam', metrics=['acc'])
+        model.compile(loss=custom_loss, optimizer='nadam', metrics=['acc'])
 
         early_stopping = EarlyStopping(monitor='val_loss', patience=3)
 
