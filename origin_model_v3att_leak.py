@@ -20,7 +20,7 @@ from inputHandler import create_train_dev_set
 
 
 def custom_loss(y_truth, sim):
-    return tf.where(y_truth == 1, 1 - sim, tf.clip_by_value(sim, 0, 1))
+    return tf.where(tf.equal(y_truth, 1), 1 - sim, tf.clip_by_value(sim, 0, 1))
 
 
 class SiameseBiLSTM:
