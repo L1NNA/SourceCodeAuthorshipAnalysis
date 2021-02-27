@@ -6,7 +6,6 @@ import gc
 import pickle
 
 
-
 def train_word2vec(documents, embedding_dim):
     """
     train word2vector over traning documents
@@ -16,8 +15,8 @@ def train_word2vec(documents, embedding_dim):
     Returns:
         word_vectors(dict): dict containing words and their respective vectors
     """
-    model = Word2Vec(documents, min_count=10, size=embedding_dim)
-    print('min_count: '+str(10))
+    model = Word2Vec(documents, min_count=500, size=embedding_dim)
+    print('min_count=500')
     word_vectors = model.wv
     del model
     return word_vectors
@@ -44,12 +43,13 @@ def create_embedding_matrix(tokenizer, word_vectors, embedding_dim):
             if embedding_vector is not None:
                 embedding_matrix[i] = embedding_vector
         except KeyError:
-            print("vector not found for word - %s" % word)
+            tmp=1
+            #print("vector not found for word - %s" % word)
     print('Null word embeddings: %d' % np.sum(np.sum(embedding_matrix, axis=1) == 0))
     return embedding_matrix
 
 
-def word_embed_meta_data(documents, embedding_dim, language):
+def word_embed_meta_data(documents, embedding_dim,lan):
     """
     Load tokenizer object for given vocabs list
     Args:
@@ -59,12 +59,10 @@ def word_embed_meta_data(documents, embedding_dim, language):
         tokenizer (keras.preprocessing.text.Tokenizer): keras tokenizer object
         embedding_matrix (dict): dict with word_index and vector mapping
     """
-
     documents = [x.lower().split() for x in documents]
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(documents)
-    # save tokenizer for testing
-    with open('checkpoints/tokenizer/'+language+'_tokenizer.pickle', 'wb') as handle:
+    with open('checkpoints/tokenizer/java_tokenizer.pickle', 'wb') as handle:
         pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
     word_vector = train_word2vec(documents, embedding_dim)
     embedding_matrix = create_embedding_matrix(tokenizer, word_vector, embedding_dim)
@@ -99,11 +97,9 @@ def create_train_dev_set(tokenizer, sentences_pair, is_similar, max_sequence_len
     sentences2 = [x[1].lower() for x in sentences_pair]
     train_sequences_1 = tokenizer.texts_to_sequences(sentences1)
     train_sequences_2 = tokenizer.texts_to_sequences(sentences2)
-    #leaks = [[len(set(x1)), len(set(x2)), len(set(x1).intersection(x2))]
-    #         for x1, x2 in zip(train_sequences_1, train_sequences_2)]
-    leaks = [[len(set(x1)), len(set(x2))]
+    leaks = [[len(set(x1)), len(set(x2)), len(set(x1).intersection(x2))]
              for x1, x2 in zip(train_sequences_1, train_sequences_2)]
-             
+
     train_padded_data_1 = pad_sequences(train_sequences_1, maxlen=max_sequence_length)
     train_padded_data_2 = pad_sequences(train_sequences_2, maxlen=max_sequence_length)
     train_labels = np.array(is_similar)
@@ -146,10 +142,9 @@ def create_test_data(tokenizer, test_sentences_pair, max_sequence_length):
 
     test_sequences_1 = tokenizer.texts_to_sequences(test_sentences1)
     test_sequences_2 = tokenizer.texts_to_sequences(test_sentences2)
-    leaks_test = [[len(set(x1)), len(set(x2))]
+    leaks_test = [[len(set(x1)), len(set(x2)), len(set(x1).intersection(x2))]
                   for x1, x2 in zip(test_sequences_1, test_sequences_2)]
-    #leaks_test = [[len(set(x1)), len(set(x2)), len(set(x1).intersection(x2))]
-    #              for x1, x2 in zip(test_sequences_1, test_sequences_2)]
+
     leaks_test = np.array(leaks_test)
     test_data_1 = pad_sequences(test_sequences_1, maxlen=max_sequence_length)
     test_data_2 = pad_sequences(test_sequences_2, maxlen=max_sequence_length)
