@@ -19,7 +19,6 @@ import time
 import pickle
 import os
 import sys
-sys.path.insert(0, '/home/jovyan/Source_Code_Veri/src/data_split')
 from tokenizer_sp import get_tokenizer_lg
 from read_dataset import get_veribin_tfrs
 from tfr import make_batch
@@ -241,17 +240,12 @@ def run_training(lang,
         
     testing['val'] = validation
     
-    
-    ###
-    
+        
     training = training.shuffle(10000, seed=10).take(10000)
     for k, kv in testing.items(): 
         print(kv)
         testing[k] = testing[k].shuffle(3000, seed=10).take(3000)
-    ###
-    # remove dis remove problem
-    ###
-    
+
     
     tokenizer = get_tokenizer_lg(pd.DataFrame(), pd.DataFrame(), proj_path+'/models/tokenizers/'+lang+'/')
     
@@ -328,7 +322,7 @@ if __name__ == '__main__':
     run_training(
         lang=sys.argv[1],
         bin_home='',
-        proj_path='/home/jovyan/Source_Code_Veri',
+        proj_path=sys.argv[2],
         batch_size=192,
         max_seq_len=2400,
         train_op=True, load_op=False)
