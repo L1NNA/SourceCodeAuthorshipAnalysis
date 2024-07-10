@@ -20,7 +20,7 @@ import pickle
 import os
 import sys
 from tokenizer_sp import get_tokenizer_lg
-from read_dataset import get_veribin_tfrs
+from read_dataset import get_tfrs
 from tfr import make_batch
 
 
@@ -228,7 +228,7 @@ def run_training(lang,
     if not os.path.exists(model_path):
         os.makedirs(model_path)
 
-    training, validation, testing = get_veribin_tfrs(
+    training, validation, testing = get_tfrs(
         data_path, 'task_cluster', '2017', lang
     )
     if lang == 'c':
